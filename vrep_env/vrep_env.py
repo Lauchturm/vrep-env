@@ -147,7 +147,19 @@ class VrepEnv(gym.Env):
 				still_running = e[1] & 1
 				if not still_running:
 					break
-		except: pass
+		except:
+			print("BROKE OUT OF STOP SIM LOOP DUE TO ERROR\n{}\nLet's try one more time!".format(e))
+			time.sleep(10)
+			try:
+				while True:
+					self.RAPI_rc(vrep.simxGetIntegerSignal(self.cID, 'sig_debug', vrep.simx_opmode_blocking))
+					e = vrep.simxGetInMessageInfo(self.cID, vrep.simx_headeroffset_server_state)
+					still_running = e[1] & 1
+					if not still_running:
+						break
+			except Exception as e:
+				print("BROKE OUT OF STOP SIM LOOP DUE TO ERROR the second time\n{}\n".format(e))
+
 		self.sim_running = False
 	
 	def step_simulation(self):
